@@ -1,5 +1,5 @@
-import { useState } from "react";
-import { Link, useLocation } from "react-router-dom";
+import { useEffect, useState } from "react";
+import { Link, useLocation, useSearchParams } from "react-router-dom";
 import { cn } from "@/lib/utils";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -49,6 +49,7 @@ import { useNavigate } from "react-router-dom";
 import { useTranslation } from "react-i18next";
 import AvatarUpload from "@/components/AvatarUpload";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
+import AIChat from "@/components/AIChat";
 
 interface LayoutProps {
   children: React.ReactNode;
@@ -65,6 +66,8 @@ export default function Layout({ children }: LayoutProps) {
   const { toast } = useToast();
   const navigate = useNavigate();
   const { t } = useTranslation();
+  const [searchParams] = useSearchParams();
+  const openChat = searchParams.get("chat") === "open";
 
   const allNavigation = [
     {
@@ -120,6 +123,15 @@ export default function Layout({ children }: LayoutProps) {
     }
   };
 
+  useEffect(() => {
+    if (openChat) {
+      const params = new URLSearchParams(searchParams);
+      params.delete("chat");
+      const qs = params.toString();
+      navigate(`${location.pathname}${qs ? `?${qs}` : ""}`, { replace: true });
+    }
+  }, [openChat]);
+
   return (
     <div className="min-h-screen bg-background">
       {/* Enhanced Sidebar with Glassmorphism */}
@@ -156,7 +168,9 @@ export default function Layout({ children }: LayoutProps) {
               onClick={() => setSidebarCollapsed(!sidebarCollapsed)}
               className={cn(
                 "absolute hidden lg:flex w-8 h-8 rounded-full bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 shadow-business hover:shadow-business-md transition-all duration-300 hover:scale-110",
-                sidebarCollapsed ? "right-0 translate-x-1/2 top-4" : "-right-4 top-6",
+                sidebarCollapsed
+                  ? "right-0 translate-x-1/2 top-4"
+                  : "-right-4 top-6",
               )}
             >
               <Menu
@@ -418,8 +432,50 @@ export default function Layout({ children }: LayoutProps) {
         </header>
 
         {/* Page content - mobile-optimized padding */}
-        <main className="p-4 md:p-6">{children}</main>
+        <main className="p-4 pb-24 md:p-6 md:pb-6">{children}</main>
+
+        {/* Mobile bottom navigation */}
+        <footer className="fixed inset-x-0 bottom-0 z-40 border-t border-gray-200/60 dark:border-gray-700/60 bg-white/90 dark:bg-gray-900/90 backdrop-blur supports-[backdrop-filter]:bg-white/60 lg:hidden">
+          <nav className="grid grid-cols-5 h-16">
+            {[
+              { href: "/dashboard", icon: LayoutDashboard, label: "Dashboard" },
+              { href: "/warehouse", icon: Package, label: "Warehouse" },
+              { href: "/clients", icon: Users, label: "Clients" },
+              { href: "/sales", icon: ShoppingCart, label: "Sales" },
+              {
+                href: "/settings",
+                icon: Settings,
+                label: t("navigation.settings"),
+              },
+            ].map((item) => {
+              const active = location.pathname === item.href;
+              const Icon = item.icon;
+              return (
+                <Link
+                  key={item.href}
+                  to={item.href}
+                  className={cn(
+                    "flex flex-col items-center justify-center gap-1 text-xs font-medium",
+                    active
+                      ? "text-primary"
+                      : "text-gray-600 dark:text-gray-300 hover:text-gray-900 dark:hover:text-white",
+                  )}
+                >
+                  <Icon className={cn("h-5 w-5", active && "text-primary")} />
+                  <span className="truncate max-w-[68px]">{item.label}</span>
+                </Link>
+              );
+            })}
+          </nav>
+        </footer>
       </div>
+
+      {/* Global floating AI Chat (hidden on Chat page) */}
+      <AIChat
+        variant="floating"
+        defaultOpen={openChat}
+        showTrigger={location.pathname !== "/chat"}
+      />
 
       {/* Mobile sidebar overlay */}
       {sidebarOpen && (

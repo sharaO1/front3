@@ -92,11 +92,7 @@ async function tryResetBackend(accessToken?: string | null) {
   }
 
   // 2) Fallback: send a reset command payload to chat endpoints
-  const payloads = [
-    { action: "reset" },
-    { reset: true },
-    { command: "reset" },
-  ];
+  const payloads = [{ action: "reset" }, { reset: true }, { command: "reset" }];
   for (const url of getCandidateApiUrls()) {
     for (const body of payloads) {
       try {
@@ -374,7 +370,7 @@ export default function AIChat({
       {showFloatingButton && (
         <Button
           onClick={() => setIsOpen(true)}
-          className="fixed bottom-6 right-6 h-14 w-14 rounded-full bg-gradient-to-br from-blue-500 to-purple-600 hover:from-blue-600 hover:to-purple-700 shadow-lg transition-transform hover:scale-110 z-40"
+          className="fixed right-4 lg:right-6 bottom-[calc(env(safe-area-inset-bottom)+4.5rem)] lg:bottom-6 h-14 w-14 rounded-full bg-gradient-to-br from-blue-500 to-purple-600 hover:from-blue-600 hover:to-purple-700 shadow-lg transition-transform hover:scale-110 z-50"
           aria-label="Open chat"
         >
           <MessageCircle className="h-6 w-6 text-white" />
@@ -391,7 +387,7 @@ export default function AIChat({
                 : isFullScreen
                   ? "fixed inset-0 z-50 p-0 bg-background overscroll-none touch-none"
                   : variant === "floating"
-                    ? "fixed bottom-6 right-6 z-50"
+                    ? "fixed right-4 lg:right-6 bottom-[calc(env(safe-area-inset-bottom)+4.5rem)] lg:bottom-6 z-50"
                     : "relative z-auto mt-6",
           )}
         >
@@ -500,9 +496,15 @@ export default function AIChat({
                       </div>
                       {m.role === "user" && (
                         <Avatar className="mt-1 h-8 w-8">
-                          <AvatarImage src={user?.avatar || undefined} alt={user?.name || user?.email || "User"} />
+                          <AvatarImage
+                            src={user?.avatar || undefined}
+                            alt={user?.name || user?.email || "User"}
+                          />
                           <AvatarFallback className="bg-gray-500 text-white text-xs font-medium">
-                            {getInitials(user?.name || null, user?.email || null)}
+                            {getInitials(
+                              user?.name || null,
+                              user?.email || null,
+                            )}
                           </AvatarFallback>
                         </Avatar>
                       )}
